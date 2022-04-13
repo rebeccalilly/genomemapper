@@ -4,6 +4,8 @@ from Bio.Blast import NCBIXML
 from progress.bar import Bar
 import os
 import re
+import geopy.geocoders
+from geopy.geocoders import Nominatim
 
 if not (os.path.exists("results.xml")):
     sequence_file = input("Enter the name of your sequence file in FASTA format:")
@@ -109,7 +111,7 @@ for i in accession_numbers:
 
 
 
-    print(f"For accession number {i}, the journal was published by {author} from {location}")
+    print(f"For accession number {i}, the journal was submitted by {author} from {location}")
     location_list.append(location)
 
     #bar.next()
@@ -121,6 +123,37 @@ regex_ = "([\sa-zA-Z0-9-]+,[\sa-zA-Z]+[\s0-9a-zA-Z-]+,[a-zA-Z\s]+)$"
 for i in location_list:
     result = re.findall(regex_, i)
     final_result = " ".join(result)
-    address_line.append(final_result.strip())
+    cleaned_result = final_result.strip()
+    split_address = cleaned_result.split(",")
+    first, second = split_address[0], split_address[2]
+    address = first, second
+    valid_address = ', '.join(address)
+    address_line.append(valid_address)
 
 print(address_line)
+
+
+def getLatLong(address: str) -> "tuple[float, float]":
+    """ Function: Uses Nominatim from the geopy library to process the given
+        address and return the latitude and longitutde of that address
+    Parameters:
+        address: a string that contains an address in the form of "state, capital"
+    Returns:
+        a tuple of the latitude and longitude corresponding to the given address
+    """
+
+    geopy.geocoders.options.default_user_agent = "dcs211_ali2/1"
+    geopy.geocoders.options.default_timeout = 10
+    geocoders = Nominatim()
+    locationLatLong = geocoders.geocode(address)
+    finalLatLong = [locationLatLong.latitude, locationLatLong.longitude]
+
+    return finalLatLong
+
+for i in address_line:
+    try:
+        lat_long = getLatLong(i)
+    except AttributeError as error:
+        print(f"Unable to fetch the following address using Nominatim: {i}")
+    print(lat_long)
+#"Argyll,PA37 1QA, UNITED KINGDOM"
