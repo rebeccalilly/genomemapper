@@ -55,14 +55,14 @@ def getLocations(accession_numbers: list) -> list:
     '''
     #parsing GenBank data
     Entrez.email = input("Enter your email address (so that NCBI can contact you if there's a problem):")
-    #bar = Bar("Parsing location for each accession numbers from GenBank... ", max = len(accession_numbers))
+    bar = Bar("Parsing location and author information for each accession numbers from GenBank... ", max = len(accession_numbers))
 
     location_list = []
     author_list = []
     for i in accession_numbers:
         handle = Entrez.efetch(db = 'nucleotide', rettype = 'gb', retmode = 'text', id = i)
         record = handle.read()
-        info = rec)ord.split("\n")
+        info = record.split("\n")
         location_line = [i for i in info if i.startswith('  JOURNAL   Submitted') or i.startswith('FEATURES') or i.startswith('COMMENT')]
         location_line_indices = []
         for j in location_line:
@@ -137,8 +137,9 @@ def getLocations(accession_numbers: list) -> list:
                 author += cleaned_line
 
             author_list.append(author)
-
+        bar.next()
     location_author_list = [location_list, author_list]
+    bar.finish()
     return location_author_list
 
 def getAddress(locations: list):
@@ -146,7 +147,7 @@ def getAddress(locations: list):
     '''
     address_list = []
     regex_ = "([\sa-zA-Z0-9-]+,[\sa-zA-Z]+[\s0-9a-zA-Z-]+,[a-zA-Z\s]+)$"
-    for i in location_list:
+    for i in locations:
         result = re.findall(regex_, i)
         final_result = " ".join(result)
         cleaned_result = final_result.strip()
@@ -154,7 +155,8 @@ def getAddress(locations: list):
         first, second = split_address[0], split_address[2]
         address = first, second
         valid_address = ', '.join(address)
-        address_line.append(valid_address)
+        address_list.append(valid_address)
+    return address_list
 
 def getLatLong(address: str) -> list:
     '''
@@ -176,14 +178,26 @@ def getLatLong(address: str) -> list:
 def getLatLongLists(address_list: list) -> list:
     '''
     '''
-    lat_list = []
-    long_list = []
     lat_long_list = []
+    bar = Bar("Retrieving latitude and longitude for each address using Nominatim...", max = len(address_list))
     for i in address_list:
         try:
             lat_long = getLatLong(i)
-            lat_list.append(lat_long[0])
-            long_list.append(lat_long[1])
         except AttributeError as error:
             print(f"Unable to fetch the following address using Nominatim: {i}")
+            lat_long = "Invalid Address"
+        lat_long_list.append(lat_long)
+        bar.next()
+    bar.finish()
     return lat_long_list
+
+def main():
+    accession_numbers = runBlast("blast.fasta")
+    location_author_list = getLocations(accession_numbers)
+    address_list = getAddress(location_author_list[0])
+    print(address_list)
+    latlong_list = getLatLongLists(address_list)
+    print(latlong_list)
+
+if __name__ == "__main__":
+    main()
