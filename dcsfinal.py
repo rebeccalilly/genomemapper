@@ -54,8 +54,8 @@ def getLocationsAuthors(accession_numbers: list) -> list:
         from BlastN output
     '''
     #parsing GenBank data
-    Entrez.email = input("Enter your email address (so that NCBI can contact you if there's a problem):")
-    bar = Bar("Parsing location and author information for each accession numbers from GenBank... ", max = len(accession_numbers))
+    Entrez.email = input("Enter your email address (so that NCBI can contact you if there's a problem): ")
+    bar = Bar("Processing accession numbers in GenBank:", max = len(accession_numbers))
 
     location_list = []
     author_list = []
@@ -180,18 +180,18 @@ def getLatLongLists(address_list: list) -> list:
     '''
     lat_list = []
     long_list = []
-    bar = Bar("Retrieving latitude and longitude for each address using Nominatim...", max = len(address_list))
+    bar = Bar("Processing each address in Nominatim:", max = len(address_list))
     for i in address_list:
         try:
             lat_long = getLatLong(i)
         except AttributeError as error:
             print(f"Unable to fetch the following address using Nominatim: {i}")
-            new_address = input("Enter valid address: ")
+            new_address = input("Enter valid address in 'city, country' format: ")
             try:
                 lat_long = getLatLong(new_address)
-            except:
-                print(f"Invalid address entered")
-                lat_long = "Invalid Address"
+            except AttributeError as error:
+                print("Invalid Address entered")
+                lat_long = ["Invalid Address", "Invalid Address"]
         lat_list.append(lat_long[0])
         long_list.append(lat_long[1])
         bar.next()
