@@ -2,6 +2,9 @@ from Bio import SeqIO
 from Bio.Blast import NCBIWWW
 from Bio.Blast import NCBIXML
 from progress.bar import Bar
+import pandas as pd
+import geopandas
+import matplotlib.pyplot as plt
 import os
 import re
 
@@ -114,6 +117,27 @@ for i in accession_numbers:
 
     #bar.next()
 #bar.finish()
+
+#Making graph interactive
+def makeInteractive(blast_data_dict: df):
+#Converting dictionary to dataframe and then to GeoDataFrame
+    df = pd.DataFrame(blast_data_dict)
+    gdf = geopandas.GeoDataFrame(
+        df, geometry = geopandas.points_from_xy(df.Longitude, df. Latitude))
+    )
+#mapping using .explore()
+    # world = geopandas.read_file(geopandas.geopandas.datasets.get_path(gdf))
+    # ax = world.plot(colot = 'white', edgecolor = black)
+    author = blast_data_dict[0]
+    institution = blast_data_dict[1]
+    #other tiles
+    gdf.explore("geometry", cmap = 'Set2', Legend = False,
+                tooltip = False popup = ['author','institution'])
+ 
+    # gdf.plot(ax=ax, color = 'red')
+    # plt.show()
+
+
 
 
 address_line = []
