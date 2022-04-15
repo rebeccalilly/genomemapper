@@ -142,8 +142,19 @@ def getLocationsAuthors(accession_numbers: list) -> list:
     bar.finish()
     return location_author_list
 
-def getAddress(locations: list):
+def getAddress(locations: list) -> list:
     '''
+    Function to use regex to pull the valid address from each of the more specific
+    locations parsed by GenBank
+
+    Args:
+        locations: list of all locations parsed from GenBank
+
+    Returns:
+        list of valid addresses
+
+    * Note: this regex will not work for all locations returned from GenBank,
+            but invalid addresses will be caught by getLatLongLists
     '''
     address_list = []
     regex_ = "([\sa-zA-Z0-9-]+,[\sa-zA-Z]+[\s0-9a-zA-Z-]+,[a-zA-Z\s]+)$"
@@ -177,6 +188,15 @@ def getLatLong(address: str) -> list:
 
 def getLatLongLists(address_list: list) -> list:
     '''
+    Function to get the latitude and longitude for each address and return them
+    as a list containing the latitude list and the longitude list
+
+    Args:
+        address_list: list -- list of all addresses to be processed
+
+    Returns:
+        list containing a list of latitudes for every address and a list of
+        longitudes for every address
     '''
     lat_list = []
     long_list = []
