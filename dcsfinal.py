@@ -41,7 +41,7 @@ def runBlast(sequence_file: str) -> list:
 
     return accession_numbers
 
-def getLocations(accession_numbers: list) -> list:
+def getLocationsAuthors(accession_numbers: list) -> list:
     '''
     Function to use Entrez to parse location and first author data for the each
     of 50 top hits from BlastN output and return that data in a list
@@ -178,22 +178,29 @@ def getLatLong(address: str) -> list:
 def getLatLongLists(address_list: list) -> list:
     '''
     '''
-    lat_long_list = []
+    lat_list = []
+    long_list = []
     bar = Bar("Retrieving latitude and longitude for each address using Nominatim...", max = len(address_list))
     for i in address_list:
         try:
             lat_long = getLatLong(i)
         except AttributeError as error:
             print(f"Unable to fetch the following address using Nominatim: {i}")
-            lat_long = "Invalid Address"
-        lat_long_list.append(lat_long)
+            new_address = input("Enter valid address: ")
+            try:
+                lat_long = getLatLong(new_address)
+            except:
+                print(f"Invalid address entered")
+                lat_long = "Invalid Address"
+        lat_list.append(lat_long[0])
+        long_list.append(lat_long[1])
         bar.next()
     bar.finish()
-    return lat_long_list
+    return [lat_list, long_list]
 
 def main():
     accession_numbers = runBlast("blast.fasta")
-    location_author_list = getLocations(accession_numbers)
+    location_author_list = getLocationsAuthors(accession_numbers)
     address_list = getAddress(location_author_list[0])
     print(address_list)
     latlong_list = getLatLongLists(address_list)
