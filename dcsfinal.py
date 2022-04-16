@@ -2,6 +2,9 @@ from Bio import SeqIO
 from Bio.Blast import NCBIWWW
 from Bio.Blast import NCBIXML
 from progress.bar import Bar
+import pandas as pd
+import geopandas
+import matplotlib.pyplot as plt
 import os
 import re
 import geopy.geocoders
@@ -218,13 +221,40 @@ def getLatLongLists(address_list: list) -> list:
     bar.finish()
     return [lat_list, long_list]
 
+def makeDataDict(lat_long_list: list, location_author_list: list):
+    blast_dict = {'authors': location_author_list[1], 'address': location_author_list[0], 'Latitude': lat_long_list[0], 'Longitude': lat_long_list[1]}
+    return blast_dict
+    '''
+#Making graph interactive
+def makeInteractive(blast_data_dict: dict):
+#Converting dictionary to dataframe and then to GeoDataFrame
+    df = pd.DataFrame(blast_data_dict)
+    gdf = geopandas.GeoDataFrame(
+        df, geometry = geopandas.points_from_xy(df.Longitude, df.Latitude))
+#mapping using .explore()
+    # world = geopandas.read_file(geopandas.geopandas.datasets.get_path(gdf))
+    # ax = world.plot(colot = 'white', edgecolor = black)
+    author = blast_data_dict[0]
+    address = blast_data_dict[1]
+    #other tiles
+    gdf.explore("geometry", cmap = 'Set2', Legend = False,
+                tooltip = False, popup = ['author','address'])
+
+    # gdf.plot(ax=ax, color = 'red')
+    # plt.show()
+    '''
+
 def main():
     accession_numbers = runBlast("blast.fasta")
     location_author_list = getLocationsAuthors(accession_numbers)
     address_list = getAddress(location_author_list[0])
-    print(address_list)
+    # print(address_list)
     latlong_list = getLatLongLists(address_list)
-    print(latlong_list)
+    # print(latlong_list)
+    '''
+    blast_data_dict = makeDataDict(latlong_list, location_author_list)
+    makeInteractive(blast_data_dict)
+    '''
 
 if __name__ == "__main__":
     main()
