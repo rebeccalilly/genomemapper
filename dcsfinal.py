@@ -10,6 +10,7 @@ import re
 import geopy.geocoders
 from geopy.geocoders import Nominatim
 from Bio import Entrez
+import folium
 
 def runBlast(sequence_file: str) -> list:
     '''
@@ -229,9 +230,22 @@ def getLatLongLists(address_list: list) -> list:
     bar.finish()
     return [lat_list, long_list]
 
-def makeDataDict(lat_long_list: list, location_author_list: list):
-    blast_dict = {'authors': location_author_list[1], 'address': location_author_list[0], 'Latitude': lat_long_list[0], 'Longitude': lat_long_list[1]}
+def makeDataDict(accession_numbers: list, lat_long_list: list, location_author_list: list):
+    blast_dict = {'locus_name/accession_numbers': accession_numbers, 'authors': location_author_list[1], 'address': location_author_list[0], 'Latitude': lat_long_list[0], 'Longitude': lat_long_list[1]}
     return blast_dict
+
+# use folium map to make an interactive map with pop up that shows accession number, address, and authors for each location
+def makeInteractive(blast_data_dict: dict):
+    #Converting dictionary to dataframe
+    df = pd.DataFrame(blast_data_dict)
+    grouped_df = df.groupby(['authors','address','Latitude','Longitude'])['locus_name/accession_numbers'].apply(', '.join).reset_index()
+
+    map = folium.Map([51.1657, 10.4515], tiles="Stamen Terrain", zoom_start = 2)
+    for index, location_info in grouped_df.iterrows():
+        folium.Marker([location_info["Latitude"], location_info["Longitude"]], popup= "Locus name/accession number: " + location_info["locus_name/accession_numbers"] + '<br>' + '<br>' + "Authors: " + location_info["authors"] + '<br>' + '<br>' + "Address: " + location_info["address"]).add_to(map)
+
+    map.save("interactive_map.html")
+
     '''
 #Making graph interactive
 def makeInteractive(blast_data_dict: dict):
@@ -259,10 +273,10 @@ def main():
     # print(address_list)
     latlong_list = getLatLongLists(address_list)
     # print(latlong_list)
-    '''
-    blast_data_dict = makeDataDict(latlong_list, location_author_list)
+
+    blast_data_dict = makeDataDict(accession_numbers, latlong_list, location_author_list)
     makeInteractive(blast_data_dict)
-    '''
+
 
 if __name__ == "__main__":
     main()
