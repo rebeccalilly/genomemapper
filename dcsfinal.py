@@ -2,6 +2,9 @@ from Bio import SeqIO
 from Bio.Blast import NCBIWWW
 from Bio.Blast import NCBIXML
 from progress.bar import Bar
+import pandas as pd
+import geopandas
+import matplotlib.pyplot as plt
 import os
 import re
 import geopy.geocoders
@@ -148,8 +151,19 @@ def getLocationsAuthors(accession_numbers: list) -> list:
     bar.finish()
     return location_author_list
 
-def getAddress(locations: list):
+def getAddress(locations: list) -> list:
     '''
+    Function to use regex to pull the valid address from each of the more specific
+    locations parsed by GenBank
+
+    Args:
+        locations: list of all locations parsed from GenBank
+
+    Returns:
+        list of valid addresses
+
+    * Note: this regex will not work for all locations returned from GenBank,
+            but invalid addresses will be caught by getLatLongLists
     '''
     address_list = []
     regex_ = "([\sa-zA-Z0-9-]+,[\sa-zA-Z]+[\s0-9a-zA-Z-]+,[a-zA-Z\s]+)$" # regular expression to get the specific address that exludes the institution names and in some cases the street name as well
@@ -183,12 +197,15 @@ def getLatLong(address: str) -> list:
 
 def getLatLongLists(address_list: list) -> list:
     '''
-    Input address to the getLatLong function and returns a latitude list and a longitude list
+    Function to get the latitude and longitude for each address and return them
+    as a list containing the latitude list and the longitude list
 
     Args:
-        address_list: a list of strings that correspond to specific address
+        address_list: list -- list of all addresses to be processed
+
     Returns:
-        a list that contains two list: a latitude list and a longitude list
+        list containing a list of latitudes for every address and a list of
+        longitudes for every address
     '''
     lat_list = []
     long_list = []
@@ -212,13 +229,40 @@ def getLatLongLists(address_list: list) -> list:
     bar.finish()
     return [lat_list, long_list]
 
+def makeDataDict(lat_long_list: list, location_author_list: list):
+    blast_dict = {'authors': location_author_list[1], 'address': location_author_list[0], 'Latitude': lat_long_list[0], 'Longitude': lat_long_list[1]}
+    return blast_dict
+    '''
+#Making graph interactive
+def makeInteractive(blast_data_dict: dict):
+#Converting dictionary to dataframe and then to GeoDataFrame
+    df = pd.DataFrame(blast_data_dict)
+    gdf = geopandas.GeoDataFrame(
+        df, geometry = geopandas.points_from_xy(df.Longitude, df.Latitude))
+#mapping using .explore()
+    # world = geopandas.read_file(geopandas.geopandas.datasets.get_path(gdf))
+    # ax = world.plot(colot = 'white', edgecolor = black)
+    author = blast_data_dict[0]
+    address = blast_data_dict[1]
+    #other tiles
+    gdf.explore("geometry", cmap = 'Set2', Legend = False,
+                tooltip = False, popup = ['author','address'])
+
+    # gdf.plot(ax=ax, color = 'red')
+    # plt.show()
+    '''
+
 def main():
     accession_numbers = runBlast("blast.fasta")
     location_author_list = getLocationsAuthors(accession_numbers)
     address_list = getAddress(location_author_list[0])
-    print(address_list)
+    # print(address_list)
     latlong_list = getLatLongLists(address_list)
-    print(latlong_list)
+    # print(latlong_list)
+    '''
+    blast_data_dict = makeDataDict(latlong_list, location_author_list)
+    makeInteractive(blast_data_dict)
+    '''
 
 if __name__ == "__main__":
     main()
