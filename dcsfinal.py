@@ -231,14 +231,32 @@ def getLatLongLists(address_list: list) -> list:
     return [lat_list, long_list]
 
 def makeDataDict(accession_numbers: list, lat_long_list: list, location_author_list: list):
+    '''
+    Function to make a dictionary with five keys: acccession numbers, authors, address, latitude, longitude
+
+    Args:
+        accession numbers: list -- list of all accession numbers
+        lat_long_list: list -- list containing a list of latitudes for every address and a list of longitudes for every address
+        location_author_list: list -- location of institution and author names
+
+    Returns:
+        dictionary containing five keys: acccession numbers, authors, address, latitude, longitude
+    '''
     blast_dict = {'locus_name/accession_numbers': accession_numbers, 'authors': location_author_list[1], 'address': location_author_list[0], 'Latitude': lat_long_list[0], 'Longitude': lat_long_list[1]}
     return blast_dict
 
-# use folium map to make an interactive map with pop up that shows accession number, address, and authors for each location
 def makeInteractive(blast_data_dict: dict):
-    #Converting dictionary to dataframe
+    '''
+    Function to make an interactive map based on the location of the institution with pop up that shows the accession number, address, and authors for each location
+
+    Args:
+        blast_data_dict: dict -- a dictionary containing acccession numbers, authors, address, latitude, longitude as keys
+
+    Returns:
+        an interactive leaflet map made using the library Folium
+    '''
     df = pd.DataFrame(blast_data_dict)
-    grouped_df = df.groupby(['authors','address','Latitude','Longitude'])['locus_name/accession_numbers'].apply(', '.join).reset_index()
+    grouped_df = df.groupby(['authors','address','Latitude','Longitude'])['locus_name/accession_numbers'].apply(', '.join).reset_index() # use group by since some of the genes (accession numbers) are discovered by the same authors
 
     map = folium.Map([51.1657, 10.4515], tiles="Stamen Terrain", zoom_start = 2)
     for index, location_info in grouped_df.iterrows():
@@ -246,34 +264,12 @@ def makeInteractive(blast_data_dict: dict):
 
     map.save("interactive_map.html")
 
-    '''
-#Making graph interactive
-def makeInteractive(blast_data_dict: dict):
-#Converting dictionary to dataframe and then to GeoDataFrame
-    df = pd.DataFrame(blast_data_dict)
-    gdf = geopandas.GeoDataFrame(
-        df, geometry = geopandas.points_from_xy(df.Longitude, df.Latitude))
-#mapping using .explore()
-    # world = geopandas.read_file(geopandas.geopandas.datasets.get_path(gdf))
-    # ax = world.plot(colot = 'white', edgecolor = black)
-    author = blast_data_dict[0]
-    address = blast_data_dict[1]
-    #other tiles
-    gdf.explore("geometry", cmap = 'Set2', Legend = False,
-                tooltip = False, popup = ['author','address'])
-
-    # gdf.plot(ax=ax, color = 'red')
-    # plt.show()
-    '''
 
 def main():
     accession_numbers = runBlast("blast.fasta")
     location_author_list = getLocationsAuthors(accession_numbers)
     address_list = getAddress(location_author_list[0])
-    # print(address_list)
     latlong_list = getLatLongLists(address_list)
-    # print(latlong_list)
-
     blast_data_dict = makeDataDict(accession_numbers, latlong_list, location_author_list)
     makeInteractive(blast_data_dict)
 
