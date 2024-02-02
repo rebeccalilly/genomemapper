@@ -6,5 +6,6 @@
 
 ## Directions:
 ## 1. Download the example FASTA file and Python program. 
-## 2. Run the Python program with the FASTA file as the input to run BlastN. (FASTA files containing any sequence can be used with this program, but the example file will provide an example of the expected output.)
+## 2. Run the Python program with the FASTA file as the input to run BlastN. 
+(FASTA files containing any sequence can be used with this program, but the example file will provide an example of the expected output for an algal sequence.)
 ## 3. The program will produce an HTML file containing the interactive map. 
