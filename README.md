@@ -1,10 +1,10 @@
-# DCS211 Final Project
+# Genome Mapper
 
-## The program uses biopython to run BlastN from a python file and map the location of labs studying the top species associated with the sequence.
+## This Python program takes in a FASTA file containing a nucleotide sequence, runs BlastN via biopython, and maps the location of labs studying the top species associated with the given sequence on an interactive map.
 
-## Python libraries needed for this program: Bio, Bio.Blast, progress.bar, pandas, os, re, geopy.geocoders, folium
+## Prior to running the program, make sure that the following Python libraries are installed on your local machine: Bio, Bio.Blast, progress.bar, pandas, os, re, geopy.geocoders, folium.
 
 ## Directions:
-## 1. Download the fasta and python file and put them in the same folder.
-## 2. Run the python file, and use the fasta file as the input to run BlastN.
-## 3. Once the code finish running, open the html file found in the same folder as the program to find the interactive map.
+## 1. Download the example FASTA file and Python program. 
+## 2. Run the Python program with the FASTA file as the input to run BlastN. (FASTA files containing any sequence can be used with this program, but the example file will provide an example of the expected output.)
+## 3. The program will produce an HTML file containing the interactive map. 
